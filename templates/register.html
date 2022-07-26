@@ -1,0 +1,77 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="content-section" >
+    <legend  class="border"> Register today</legend>
+  <form method="POST" action="">
+    {{ forms.hidden_tag() }}
+    <fieldset class="form-group">
+        <div class="form-group">
+           {{ forms.firstname.label (class="form-control-label") }}
+           {{ forms.firstname(class="form-control form-control-lg") }}
+        </div>
+
+    <div class="form-group">
+      {{ forms.lastname.label (class="form-control-label") }}
+      {{ forms.lastname(class=" form-control form-control-lg") }}
+  </div>
+
+  <div class="form-group">
+    <!-- the errors to notify that email has to in the correct order -->
+    {{ forms.email.label (class="form-control-label") }}
+   {% if forms.email.errors %}
+   
+        {{ forms.email(class=" form-control form-control-lg is-invalid") }}
+          <div class="invalid-feedback">
+              {% for error in forms.email.errors %}
+                  <span>{{ error}}</span>
+              {% endfor %}    
+      </div>
+      {% else %}
+         {{ forms.email(class=" form-control form-control-lg") }}
+    {% endif %}
+</div>
+
+  <div class="form-group">
+    {{ forms.password.label (class="form-control-label") }}
+    {% if forms.password.errors %}
+        {{ forms.password(class=" form-control form-control-lg is-invalid") }}
+          <div class="invalid-feedback">
+              {% for error in forms.password.errors %}
+                  <span>{{ error}}</span>
+              {% endfor %}    
+      </div>
+      {% else %}
+         {{ forms.password(class=" form-control form-control-lg") }}
+    {% endif %}
+ </div>
+ <!-- the error is to notify that password and confirm password must be equal -->
+ <div class="form-group">
+  {{ forms.c_password.label (class="form-control-label") }}
+    {% if forms.c_password.errors %}
+        {{ forms.c_password(class=" form-control form-control-lg is-invalid") }}
+          <div class="invalid-feedback">
+              {% for error in forms.c_password.errors %}
+                  <span>{{ error}}</span>
+              {% endfor %}    
+      </div>
+      {% else %}
+         {{ forms.c_password(class=" form-control form-control-lg") }}
+    {% endif %}
+</div>
+    </fieldset>
+
+    <div class="form-group">
+      {{ forms.submit(class="btn btn-outline-info") }}
+    </div>
+  </form>
+
+  <div class="border-top pt-3">
+     <small class="text-muted">
+      Already have an account? <a href=" {{ url_for('login')}} ">Login </a>
+  </small>
+  </div>
+ 
+   </div>
+
+  {%  endblock content%}

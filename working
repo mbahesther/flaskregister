@@ -1,0 +1,48 @@
+from flask import Flask, render_template, flash, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
+from form import RegisterForm, Loginform
+
+
+app = Flask(__name__)
+
+app.config['SECRET_KEY'] = 'ae70b798854d82f9d79d91c347d8c4d2'
+app.config['SQLALCHEMY_DATABASE_URI']= 'sqlite:///registration.db'
+db = SQLAlchemy(app)
+
+
+
+
+class UserRegister(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    firstname =db.Column(db.String(20), unique=True, nullable=False)
+    lastname = db.Column(db.String(20), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password =db.Column(db.String(60), nullable= False)
+    
+    def __repr__(self):
+        return f" UserRegister('{self.firstname}', '{self.lastname}', '{self.email}', '{self.password}')"
+
+
+@app.route('/')
+def home():
+   return render_template('home.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    forms = RegisterForm()
+    if forms.validate_on_submit():
+         flash("Welcome, account created", 'success')
+         return redirect(url_for('home'))
+  
+    return render_template('register.html', title="register", forms=forms)
+
+@app.route('/login')
+def login():
+   forms = Loginform()
+   if forms.validate_on_submit():
+         flash("Welcome, account created", 'success')
+         return redirect(url_for('home'))
+   return render_template('login.html', title ="login", forms=forms)
+
+if __name__ == '__main__':
+   app.run(debug=True)
