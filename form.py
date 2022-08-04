@@ -5,7 +5,7 @@ from wtforms.validators import DataRequired, length, Email, EqualTo
 
 
 
-
+#register user form
 class RegisterForm(FlaskForm):
     firstname = StringField ('First Name', validators = [DataRequired(), length(min=2, max=25)])
     lastname = StringField('Last name', validators = [DataRequired(), length(min=2, max=25)])
@@ -15,13 +15,9 @@ class RegisterForm(FlaskForm):
     submit = SubmitField('Sign up')
 
 
-    #check for double email
-    # def validate_email(self, email):
-    #     user = UserRegister.query.filter_by(email=email.data).first()
-    #     if user:
-    #         raise ValidationError('email already exits')
+ 
           
-
+#login form
 class Loginform(FlaskForm):
         email = StringField('Email', validators=[DataRequired(), Email()])
         password =PasswordField('Password', validators=[DataRequired()])
