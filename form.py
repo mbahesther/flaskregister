@@ -22,3 +22,11 @@ class Loginform(FlaskForm):
         email = StringField('Email', validators=[DataRequired(), Email()])
         password =PasswordField('Password', validators=[DataRequired()])
         submit = SubmitField('Login')
+
+
+class UpdateAccountForm(FlaskForm):
+    firstname = StringField ('First Name', validators = [DataRequired(), length(min=2, max=25)])
+    lastname = StringField('Last name', validators = [DataRequired(), length(min=2, max=25)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    
+    submit = SubmitField('Update')

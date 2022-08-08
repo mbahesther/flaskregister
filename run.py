@@ -25,7 +25,7 @@ def home():
 #register route
 @app.route('/register', methods=['GET', 'POST'])
 def register():
- 
+
    forms = RegisterForm()
    if forms.validate_on_submit():
       #to check if the email exit before registering the user
@@ -41,9 +41,7 @@ def register():
       if user:
          mail= send_mail(forms.email.data)
       
-      flash("Welcome,account created you can login and a message is sent to you",'success')
-      
-
+      flash("Welcome,account created you can login and a message is sent to your email address",'success')
       return redirect(url_for('login'))
       
    return render_template('register.html', title="register", forms=forms)
@@ -53,19 +51,51 @@ def register():
 #login route
 @app.route('/login', methods=['GET','POST'])
 def login():
-   
+   if current_user.is_authenticated:   #if user is already login cannot go the login page again
+      return redirect(url_for('home'))
    forms = Loginform()
    if forms.validate_on_submit():
-      user = UserRegister.query.filter_by(email= forms.email.data).first()
+      user = UserRegister.query.filter_by(email= forms.email.data).first()    #to check the database
       if user and bcrypt.check_password_hash(user.password, forms.password.data):
          login_user(user)
          #flash("You are logged in", 'success')
-         return redirect(url_for('home'))
+       
+         return   redirect(url_for('dashboard'))
       else:
          flash("login unsuccessful, please enter correct email and password", 'danger')
          return redirect(url_for('login'))   
    return render_template('login.html', title ="login", forms=forms)
 
+
+#dashboard route to
+@app.route('/dashboard', methods=['GET','POST'])
+@login_required
+def dashboard():
+   forms = UpdateAccountForm()        #update our account
+   if forms.validate_on_submit():
+        if forms.email.data != current_user.email: #if the current email is not same with the old then check database if email is exiting
+           user = UserRegister.query.filter_by(email=forms.email.data).first()
+
+
+           if not user:
+              
+      
+              current_user.firstname = forms.firstname.data
+              current_user.lastname = forms.lastname.data
+              current_user.email = forms.email.data
+              db.session.commit()
+              flash('your account has been updated!', 'success')
+              return redirect(url_for('dashboard'))
+   elif request.method == 'GET':
+                forms.firstname.data = current_user.firstname
+                forms.lastname.data = current_user.lastname
+                forms.email.data = current_user.email
+               
+
+      
+
+   return render_template('dashboard.html', title='dashboard', forms=forms)
+# 
 
 
 #logout route
@@ -74,5 +104,10 @@ def logout():
    logout_user()
    return redirect(url_for('home'))
 
+
+
+
 if __name__ == '__main__':
    app.run(debug=True)
+
+#next_page = request.args.get('next')redirect(next_page) if next_page else

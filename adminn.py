@@ -6,6 +6,7 @@ from run import UserRegister
 
 # app.config['SQLALCHEMY_DATABASE_URI']= 'sqlite:///admin.db'
 # db = SQLAlchemy(app)
+
 #login_manager = LoginManager(app)
 admin =Admin(app) 
 admin.add_view(ModelView(UserRegister, db.session))

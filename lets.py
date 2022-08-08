@@ -1,10 +1,9 @@
 from flask import Flask, render_template, flash, redirect, url_for,session, request
-from form import RegisterForm, Loginform
+from form import RegisterForm, Loginform, UpdateAccountForm
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from extension.maill import send_mail
-from flask_login import LoginManager, UserMixin, current_user, login_user, logout_user
-
+from flask_login import LoginManager, UserMixin, current_user, login_user, logout_user, login_required
 #LoginManager to initialze our login, UserMixin suppose for the db in our model,
 # login_user to log the user in
 
@@ -16,3 +15,4 @@ app.config['SQLALCHEMY_DATABASE_URI']= 'sqlite:///registration.db'
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
+login_manager.login_view = 'login'  #cant access the dashboard must login and take user to login route
