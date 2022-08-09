@@ -12,6 +12,20 @@ class UserRegister(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password =db.Column(db.String(60), nullable= False)
     
+    def get_reset_token(self, expires_sec=1800):
+      s = Serializer(app.config['SECRET_KEY'], expires_sec)
+      return s.dumps({'user_id': self.id}).decode('utf-8')
+    
+    @staticmethod
+    def verify_reset_token(token):
+      s =  Serializer(app.config['SECRET_KEY'])
+      try:
+         user_id = s.loads(token)[user_id]
+      except:
+         return None
+      return UserRegister.query.get(user_id)
+
+
     def __repr__(self):
         return f" UserRegister('{self.firstname}', '{self.lastname}', '{self.email}', '{self.password}')"
 
@@ -76,10 +90,8 @@ def dashboard():
         if forms.email.data != current_user.email: #if the current email is not same with the old then check database if email is exiting
            user = UserRegister.query.filter_by(email=forms.email.data).first()
 
-
            if not user:
               
-      
               current_user.firstname = forms.firstname.data
               current_user.lastname = forms.lastname.data
               current_user.email = forms.email.data
@@ -91,11 +103,7 @@ def dashboard():
                 forms.lastname.data = current_user.lastname
                 forms.email.data = current_user.email
                
-
-      
-
    return render_template('dashboard.html', title='dashboard', forms=forms)
-# 
 
 
 #logout route
@@ -103,6 +111,29 @@ def dashboard():
 def logout():
    logout_user()
    return redirect(url_for('home'))
+
+
+@app.route('/reset_password', methods=['GET','POST'])
+def reset_request():
+    if current_user.is_authenticated:   
+       return redirect(url_for('home'))
+    forms = RequestResetForm()
+    user = UserRegister.query.filter_by(email=forms.email.data).first()  #checking if there is account with the email entered for the password request
+    if user is None:
+     flash('There is no account with that email, you must register first')
+    return render_template('reset_request.html', title='Reset Password', forms=forms)
+
+
+@app.route('/reset_password/<token>', methods=['GET','POST'])
+def reset_token(token):
+    if current_user.is_authenticated:  
+       return redirect(url_for('home'))
+    user = UserRegister.verify_reset_token(token)
+    if user is None:
+      flash('That is an invalid or expire token', 'warning')
+      return redirect(url_for('reset_request'))
+    forms=ResetPasswordForm()
+    return render_template('reset_token.html', title='Reset Password', forms=forms)
 
 
 

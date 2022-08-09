@@ -2,7 +2,7 @@
 {% block content %}
 
 <div class="content-section" >
-    <legend  class="border"> Login</legend>
+    <legend  class="border"> Reset Password</legend>
   <form method="POST" action="">
     {{ forms.hidden_tag() }}
     <fieldset class="form-group">
@@ -20,35 +20,17 @@
          {{ forms.email(class=" form-control form-control-lg") }}
     {% endif %}
 </div>
-
-  <div class="form-group">
-    {{ forms.password.label (class="form-control-label") }}
-    {% if forms.password.errors %}
-        {{ forms.password(class=" form-control form-control-lg is-invalid") }}
-          <div class="invalid-feedback">
-              {% for error in forms.password.errors %}
-                  <span>{{ error}}</span>
-              {% endfor %}    
-      </div>
-      {% else %}
-         {{ forms.password(class=" form-control form-control-lg") }}
-    {% endif %}
- </div> 
+ 
     </fieldset>
      
     <div class="form-group">
       {{ forms.submit(class="btn btn-outline-info") }}
     </div>
     
-  <small class="text-muted">
-   <a href=" {{ url_for('register')}} ">forgot password </a>
-</small>
   </form>
   
   <div class="border-top pt-3">
-     <small class="text-muted">
-      Don't have an account? <a href=" {{ url_for('register')}} ">Register Now </a>
-  </small>
+     
   </div>
  
    </div>
