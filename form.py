@@ -35,7 +35,9 @@ class RequestResetForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     submit = SubmitField('Request Reset Password')
    
-
+#    user = UserRegister.query.filter_by(email.email.data).first()
+#    if user is None:
+#      flash('there is no accountwith that email, you must register first')
 
 class ResetPasswordForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired(), length(min=6)])

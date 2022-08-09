@@ -118,9 +118,15 @@ def reset_request():
     if current_user.is_authenticated:   
        return redirect(url_for('home'))
     forms = RequestResetForm()
-    user = UserRegister.query.filter_by(email=forms.email.data).first()  #checking if there is account with the email entered for the password request
-    if user is None:
-     flash('There is no account with that email, you must register first')
+    if forms.validate_on_submit():
+      user = UserRegister.query.filter_by(email=forms.email.data).first()  #checking if there is account with the email entered for the password request
+      if user is None:
+       flash('There is no account with that email, you must register first', 'danger')
+      else:
+         mail= forget_passwordmail(user.get_reset_token())
+         
+         flash('An email has been sent click on the link to reset your password', 'info')
+         return redirect(url_for('login'))
     return render_template('reset_request.html', title='Reset Password', forms=forms)
 
 
@@ -128,11 +134,13 @@ def reset_request():
 def reset_token(token):
     if current_user.is_authenticated:  
        return redirect(url_for('home'))
-    user = UserRegister.verify_reset_token(token)
-    if user is None:
-      flash('That is an invalid or expire token', 'warning')
-      return redirect(url_for('reset_request'))
     forms=ResetPasswordForm()
+    if forms.validate_on_submit():
+      user = UserRegister.verify_reset_token(token)
+      if user is None:
+        flash('That is an invalid or expire token', 'warning')
+      return redirect(url_for('reset_request'))
+    
     return render_template('reset_token.html', title='Reset Password', forms=forms)
 
 
