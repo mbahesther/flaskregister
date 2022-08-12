@@ -1,34 +1,4 @@
-from lets import *
-
- # user registration model
-@login_manager.user_loader
-def load_user(user_id):
-   return UserRegister.query.get(int(user_id))
-
-class UserRegister(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    firstname =db.Column(db.String(20), nullable=False)
-    lastname = db.Column(db.String(20),  nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password =db.Column(db.String(60), nullable= False)
-    
-    def get_reset_token(self, expires_sec=1800):
-      s = Serializer(app.config['SECRET_KEY'], expires_sec)
-      return s.dumps({'user_id': self.id}).decode('utf-8')
-    
-    @staticmethod
-    def verify_reset_token(token):
-      s =  Serializer(app.config['SECRET_KEY'])
-      try:
-         user_id = s.loads(token)[user_id]
-      except:
-         return None
-      return UserRegister.query.get(user_id)
-
-
-    def __repr__(self):
-        return f" UserRegister('{self.firstname}', '{self.lastname}', '{self.email}', '{self.password}')"
-
+from  models import *
 
 
 # home route
@@ -59,7 +29,6 @@ def register():
       return redirect(url_for('login'))
       
    return render_template('register.html', title="register", forms=forms)
-
 
 
 #login route
@@ -113,6 +82,8 @@ def logout():
    return redirect(url_for('home'))
 
 
+
+#passsword reset route
 @app.route('/reset_password', methods=['GET','POST'])
 def reset_request():
     if current_user.is_authenticated:   
@@ -123,24 +94,29 @@ def reset_request():
       if user is None:
        flash('There is no account with that email, you must register first', 'danger')
       else:
-         mail= forget_passwordmail(user.get_reset_token())
+         forget_passwordmail(user)
+         
          
          flash('An email has been sent click on the link to reset your password', 'info')
          return redirect(url_for('login'))
     return render_template('reset_request.html', title='Reset Password', forms=forms)
 
-
+#for token route
 @app.route('/reset_password/<token>', methods=['GET','POST'])
 def reset_token(token):
     if current_user.is_authenticated:  
        return redirect(url_for('home'))
+    user = UserRegister.verify_reset_token(token)
+    if user is None:
+        flash('That is an invalid or expire token', 'warning')
+        return redirect(url_for('reset_request'))
     forms=ResetPasswordForm()
     if forms.validate_on_submit():
-      user = UserRegister.verify_reset_token(token)
-      if user is None:
-        flash('That is an invalid or expire token', 'warning')
-      return redirect(url_for('reset_request'))
-    
+       hashed_password = bcrypt.generate_password_hash(forms.password.data).decode('utf-8')
+       user.password = hashed_password
+       db.session.commit()
+       flash('your password has been updated! You can now login with the new password', 'success')
+       return redirect(url_for('login'))
     return render_template('reset_token.html', title='Reset Password', forms=forms)
 
 

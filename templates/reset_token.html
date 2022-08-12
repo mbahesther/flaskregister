@@ -22,16 +22,16 @@
 </div>
 
  <div class="form-group">
-    {{ forms.confirm_password.label (class="form-control-label") }}
-   {% if forms.confirm_password.errors %}
-        {{ forms.confirm_password(class=" form-control form-control-lg is-invalid") }}
+    {{ forms.c_password.label (class="form-control-label") }}
+    {% if forms.c_password.errors %}
+        {{ forms.c_password(class=" form-control form-control-lg is-invalid") }}
           <div class="invalid-feedback">
-              {% for error in forms.confirm_password.errors %}
+              {% for error in forms.c_password.errors %}
                   <span>{{ error}}</span>
               {% endfor %}    
       </div>
       {% else %}
-         {{ forms.confirm_password(class=" form-control form-control-lg") }}
+         {{ forms.c_password(class=" form-control form-control-lg") }}
     {% endif %}
 </div>
     </fieldset>

@@ -1,3 +1,4 @@
+import os
 import smtplib
 
 from email.mime.text import MIMEText
@@ -10,8 +11,7 @@ def send_mail(usermail):
 
     s = smtplib.SMTP('smtp.mailgun.org', 587)
 
-    s.login('postmaster@sandboxcf54d2ff6bf54d17974c23afc0362c04.mailgun.org', 
-    'bdefad2e5906c52e4fd7841473eedbd1-835621cf-359f9039')
+    s.login(os.getenv('MY_DOMAIN_NAME'), os.getenv('SMTP_PASSWORD'))
     s.sendmail(msg['From'], msg['To'], msg.as_string())
     s.quit()
 
