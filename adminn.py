@@ -9,7 +9,7 @@ from run import UserRegister
 
 #login_manager = LoginManager(app)
 admin =Admin(app) 
-admin.add_view(ModelView(UserRegister, db.session))
+admin.add_view(ModelView(UserRegister, session))
 
 # @login_manager.user_loader
 # def load_user(user_id):

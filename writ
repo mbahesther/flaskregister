@@ -1,0 +1,22 @@
+# @app.route('/dashboard', methods=['GET','POST'])
+# @login_required
+# def dashboard():
+#    forms = UpdateAccountForm()        #update our account
+#    if forms.validate_on_submit():
+#         if forms.email.data != current_user.email: #if the current email is not same with the old then check database if email is exiting
+#            user = UserRegister.query.filter_by(email=forms.email.data).first()
+
+#            if not user:
+              
+#               current_user.firstname = forms.firstname.data
+#               current_user.lastname = forms.lastname.data
+#               current_user.email = forms.email.data
+#               db.session.commit()
+#               flash('your account has been updated!', 'success')
+#               return redirect(url_for('dashboard'))
+#    elif request.method == 'GET':
+#                 forms.firstname.data = current_user.firstname
+#                 forms.lastname.data = current_user.lastname
+#                 forms.email.data = current_user.email
+               
+#    return render_template('dashboard.html', title='dashboard', forms=forms)

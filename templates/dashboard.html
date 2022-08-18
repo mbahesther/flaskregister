@@ -1,9 +1,23 @@
 {% extends "layout.html" %}
 {% block content %}
-<h1>welcome  {{ current_user.firstname + " " + current_user.lastname }} </h1>
+<h1>welcome  </h1>
 <div class="content-section" >
     <legend  class="border"> Account info</legend>
-  <form method="POST" action="">
+    <table>
+      <tr>
+          <td>Firstame:</td>
+          <td>{{ g.users.firstname}}</td>
+      </tr>
+      <tr>
+          <td>lastname:</td>
+          <td> {{  g.users.lastname}}</td>
+      </tr>
+      <tr>
+          <td>Email:</td>
+          <td>{{  g.users.email}}</td>
+      </tr>
+  </table>
+  <!-- <form method="POST" action="">
     {{ forms.hidden_tag() }}
     <fieldset class="form-group">
         <div class="form-group">
@@ -18,7 +32,7 @@
 
   <div class="form-group">
     <!-- the errors to notify that email has to in the correct order -->
-    {{ forms.email.label (class="form-control-label") }}
+    <!-- {{ forms.email.label (class="form-control-label") }}
    {% if forms.email.errors %}
    
         {{ forms.email(class=" form-control form-control-lg is-invalid") }}
@@ -32,11 +46,11 @@
     {% endif %}
 </div>
 
-    </fieldset>
+    </fieldset> -->
 
-    <div class="form-group">
+    <!-- <div class="form-group">
       {{ forms.submit(class="btn btn-outline-info") }}
     </div>
-  </form>
+  </form> -->
  
 {% endblock content%}

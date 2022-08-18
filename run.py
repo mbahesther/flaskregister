@@ -1,87 +1,88 @@
 from  models import *
-
+from passlib.hash import pbkdf2_sha256 as sha256
 
 # home route
 @app.route('/')
 def home():
+   
    return render_template('home.html', title='home')
 
 #register route
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-
    forms = RegisterForm()
    if forms.validate_on_submit():
-      #to check if the email exit before registering the user
-      if UserRegister.query.filter_by(email=forms.email.data).first():
+      email =forms.email.data
+      password =forms.password.data
+      c_password= forms.password.data 
+      
+      my_cursor.execute("""SELECT * FROM user_register WHERE email = %s""", [email])
+      acc = my_cursor.fetchone()
+      
+      if acc:
          flash("Email already exists.", 'danger')
          return redirect(url_for('register'))
-      hashed_password = bcrypt.generate_password_hash(forms.password.data).decode('utf-8')
-      user = UserRegister(firstname=forms.firstname.data, lastname=forms.lastname.data,
-       email=forms.email.data,
-       password=hashed_password)
-      db.session.add(user)
-      db.session.commit()
-      if user:
-         mail= send_mail(forms.email.data)
-      
-      flash("Welcome,account created you can login and a message is sent to your email address",'success')
-      return redirect(url_for('login'))
+      else:
+         if password == c_password:
+            hash_password = sha256.hash(forms.password.data)
+            my_cursor.execute('INSERT INTO user_register(firstname, lastname, email, password) VALUES (%s, %s, %s,%s)', (forms.firstname.data, forms.lastname.data, forms.email.data, hash_password ))
+            mydb.commit()   
+            #mail= send_mail(forms.email.data)
+                   
+            flash("Welcome,account created you can login and a message is sent to your email address",'success')
+            return redirect(url_for('login') )
       
    return render_template('register.html', title="register", forms=forms)
 
+      #    mail= send_mail(forms.email.data)
+      
+@app.before_request
+def before_request():
+  
+   if 'user' in session:
+      users =[x for x in 'user' if x == session['user']]
+      g.users = session['user']
+    
 
 #login route
 @app.route('/login', methods=['GET','POST'])
 def login():
-   if current_user.is_authenticated:   #if user is already login cannot go the login page again
-      return redirect(url_for('home'))
    forms = Loginform()
    if forms.validate_on_submit():
-      user = UserRegister.query.filter_by(email= forms.email.data).first()    #to check the database
-      if user and bcrypt.check_password_hash(user.password, forms.password.data):
-         login_user(user)
-         #flash("You are logged in", 'success')
-       
-         return   redirect(url_for('dashboard'))
+      email = forms.email.data
+      my_cursor = mydb.cursor(MySQLdb.cursors.DictCursor)
+      my_cursor.execute("""SELECT * FROM user_register WHERE email = %s """, [email] ) #to database if the email exists
+      user = my_cursor.fetchone()
+   
+      if user and sha256.verify(forms.password.data, user[4]):
+            names ={
+               'firstname': user[1],
+               'lastname': user[2],
+               'email': user[3]
+            }
+            session['user'] = names
+            return redirect(url_for('dashboard'))
       else:
-         flash("login unsuccessful, please enter correct email and password", 'danger')
-         return redirect(url_for('login'))   
+           flash("login unsuccessful, please enter correct email and password", 'danger')
+           return redirect(url_for('login'))   
    return render_template('login.html', title ="login", forms=forms)
 
 
 #dashboard route to
 @app.route('/dashboard', methods=['GET','POST'])
-@login_required
 def dashboard():
-   forms = UpdateAccountForm()        #update our account
-   if forms.validate_on_submit():
-        if forms.email.data != current_user.email: #if the current email is not same with the old then check database if email is exiting
-           user = UserRegister.query.filter_by(email=forms.email.data).first()
-
-           if not user:
-              
-              current_user.firstname = forms.firstname.data
-              current_user.lastname = forms.lastname.data
-              current_user.email = forms.email.data
-              db.session.commit()
-              flash('your account has been updated!', 'success')
-              return redirect(url_for('dashboard'))
-   elif request.method == 'GET':
-                forms.firstname.data = current_user.firstname
-                forms.lastname.data = current_user.lastname
-                forms.email.data = current_user.email
-               
-   return render_template('dashboard.html', title='dashboard', forms=forms)
+    
+    forms = UpdateAccountForm()  
+     
+    return render_template('dashboard.html', title='dashboard', forms=forms)
 
 
 #logout route
 @app.route('/logout')
 def logout():
-   logout_user()
-   return redirect(url_for('home'))
-
-
+    session.pop('email', None)
+    return redirect(url_for('login'))
+  
 
 #passsword reset route
 @app.route('/reset_password', methods=['GET','POST'])
@@ -90,7 +91,11 @@ def reset_request():
        return redirect(url_for('home'))
     forms = RequestResetForm()
     if forms.validate_on_submit():
-      user = UserRegister.query.filter_by(email=forms.email.data).first()  #checking if there is account with the email entered for the password request
+      email = forms.email.data
+      my_cursor = mydb.cursor(MySQLdb.cursors.DictCursor)
+      my_cursor.execute("""SELECT * FROM user_register WHERE email = %s """, [email] )
+      user = my_cursor.fetchone()
+      #user = UserRegister.query.filter_by(email=forms.email.data).first()  #checking if there is account with the email entered for the password request
       if user is None:
        flash('There is no account with that email, you must register first', 'danger')
       else:
@@ -106,17 +111,26 @@ def reset_request():
 def reset_token(token):
     if current_user.is_authenticated:  
        return redirect(url_for('home'))
-    user = UserRegister.verify_reset_token(token)
+    my_cursor = mydb.cursor(MySQLdb.cursors.DictCursor)
+     
+    user = my_cursor.verify_reset_token(token)
     if user is None:
         flash('That is an invalid or expire token', 'warning')
         return redirect(url_for('reset_request'))
     forms=ResetPasswordForm()
     if forms.validate_on_submit():
-       hashed_password = bcrypt.generate_password_hash(forms.password.data).decode('utf-8')
-       user.password = hashed_password
-       db.session.commit()
-       flash('your password has been updated! You can now login with the new password', 'success')
-       return redirect(url_for('login'))
+      password =forms.password.data
+      c_password = forms.c_password.data
+      if password == c_password:
+            hash_password = sha256.hash(forms.password.data)
+            my_cursor.execute('UPDATE INTO user_register(password) VALUES (%s)', (hash_password))
+            mydb.commit()  
+            flash('your password has been updated! You can now login with the new password', 'success')
+            return redirect(url_for('login'))
+      #  hashed_password = bcrypt.generate_password_hash(forms.password.data).decode('utf-8')
+      #  user.password = hashed_password
+      #  db.session.commit()
+      
     return render_template('reset_token.html', title='Reset Password', forms=forms)
 
 
