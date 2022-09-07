@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, SubmitField, IntegerField
 from wtforms.validators import DataRequired, length, Email, EqualTo
 
 
@@ -43,3 +43,14 @@ class ResetPasswordForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired(), length(min=6)])
     c_password = PasswordField('Confirm Password',validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Reset Password')
+
+
+class OtpForm(FlaskForm):
+    otp = IntegerField('Enter OTP', validators=[DataRequired() ])
+    submit = SubmitField('Submit OTP')
+
+
+class Adminform(FlaskForm):
+        email = StringField('Email', validators=[DataRequired(), Email()])
+        password =PasswordField('Password', validators=[DataRequired()])
+        submit = SubmitField('Login')

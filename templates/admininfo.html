@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1>welcome  </h1>
+<div class="content-section" >
+    <legend  class="border">Admin Accounts information</legend>
+    <table cellpadding="5" cellspacing="5" border="3">
+       
+      <tr>
+        <th>Id</th>
+        <th>First name</th>
+        <th>Last name</th>
+        <th>Email</th>
+        <th>Password</th>
+        </tr>
+        
+        {% for row in rows %}
+         <tr>
+           {% for d in row %}
+          
+          <td>{{ d }}</td>
+            {% endfor %}         
+      </tr>
+     {% endfor %}
+    
+  </table>
+  
+ 
+{% endblock content%}

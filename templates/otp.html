@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="content-section" >
+    <legend  class="border"> Reset Password</legend>
+  <form method="POST" action="">
+    {{ forms.hidden_tag() }}
+    <fieldset class="form-group">
+
+  <div class="form-group">
+    {{ forms.otp.label (class="form-control-label") }}
+   {% if forms.otp.errors %}
+        {{ forms.otp(class=" form-control form-control-lg is-invalid") }}
+          <div class="invalid-feedback">
+              {% for error in forms.otp.errors %}
+                  <span>{{ error}}</span>
+              {% endfor %}    
+      </div>
+      {% else %}
+         {{ forms.otp(class=" form-control form-control-lg") }}
+    {% endif %}
+</div>
+ 
+    </fieldset>
+     
+    <div class="form-group">
+      {{ forms.submit(class="btn btn-outline-info") }}
+    </div>
+    
+  </form>
+  
+  <div class="border-top pt-3">
+     
+  </div>
+ 
+   </div>
+
+  {%  endblock content%}

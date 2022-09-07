@@ -1,49 +1,40 @@
-
 from lets import *
-from flask_admin import Admin, AdminIndexView
-from flask_admin.contrib.sqla import ModelView
-from run import UserRegister
+from passlib.hash import pbkdf2_sha256 as sha256
 
-# app.config['SQLALCHEMY_DATABASE_URI']= 'sqlite:///admin.db'
-# db = SQLAlchemy(app)
 
-#login_manager = LoginManager(app)
-admin =Admin(app) 
-admin.add_view(ModelView(UserRegister, session))
+@app.route('/adminn', methods=['GET','POST'])
 
-# @login_manager.user_loader
-# def load_user(user_id):
-#    return UserRegister.query.get(user_id)
+def adminn():
+      forms=Adminform()
+      if forms.validate_on_submit():
+         email = forms.email.data
+       
+         my_cursor = mydb.cursor(MySQLdb.cursors.DictCursor)
+         my_cursor.execute("""SELECT * FROM admin WHERE email = %s """, [email]) #to database if the email exists
+         user = my_cursor.fetchone()
+         if user and sha256.verify(forms.password.data, user[2]):
+         
 
-# class User(db.Model, UserMixin):
-#    id =db.Column(db.Integer, primary_key=True)
-#    name= db.Column(db.String(20))
-   
+               return redirect(url_for('admininfo'))
+         else:
+            flash("login unsuccessful, please enter correct email and password", 'danger')
+            return redirect(url_for('adminn'))
+      return render_template('admin.html', title='admin ', forms=forms)
+  
 
-# class MyModelView(ModelView):
-#    def is_accessible(self):
-#       return current_user.is_authenticated
+@app.route('/admininfo')
+def admininfo():  
+    my_cursor = mydb.cursor(MySQLdb.cursors.DictCursor)
+    my_cursor.execute("SELECT * FROM user_register  ")
+    rows =[]
+    for row in my_cursor:
+      rows.append(row)
+      # print(row)
 
-#    def inaccessible_callback(self, name, **kwargs):
-#       return redirect(url_for('login'))
+      
+    return render_template('admininfo.html', title='admin', rows=rows)
 
-# class MyAdminIndexView(AdminIndexView):
-#     def is_accessible(self):
-#       return current_user.is_authenticated
 
-# admin = Admin(app, index_view=MyAdminIndexView)
-# admin.add_view(ModelView(User, db.session))
-
-# @app.route('/login')
-# def login():
-#    user = UserRegister.query.get(1)
-#    login_user(user)
-#    return 'logged in'
-
-# @app.route('/logout')
-# def logout():
-#    logout_user()
-#    return 'logged out out'   
 
 
 
