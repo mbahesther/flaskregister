@@ -23,19 +23,23 @@ jwt = JWTManager(app)
 def signup():
     data = request.json
     firstname = data['firstname']
+    lastname = data['lastname']
     email = data['email']
     password = data['password']
+    confirmpassword = data['confirmpassword']
     my_cursor = mydb.cursor(MySQLdb.cursors.DictCursor)
-    my_cursor.execute(""" SELECT * FROM  account WHERE  email = %s """,  [email])
+    my_cursor.execute(""" SELECT * FROM  user_register WHERE  email = %s """,  [email])
     account = my_cursor.fetchone()
     if account:
         return { "email": "email is already registered choose a differnt email" }
     else :
-
-        hash_password = sha256.hash(password)
-        my_cursor.execute(' INSERT INTO account(firstname, email, password) VALUES (%s, %s, %s) ', (firstname, email, hash_password) )
-        mydb.commit()
-        return { "account": "your account has been created"}
+        if password == confirmpassword:
+           hash_password = sha256.hash(password)
+           my_cursor.execute(' INSERT INTO user_register(firstname, lastname, email, password) VALUES (%s, %s, %s, %s) ', (firstname, lastname, email, hash_password) )
+           mydb.commit()
+           return { "account": "your account has been created"}
+        else:
+            return jsonify("check your password if they both match")  
 
 
 
@@ -46,9 +50,9 @@ def signin():
      email = data['email']
      password = data['password']
      my_cursor =  mydb.cursor(MySQLdb.cursors.DictCursor)
-     my_cursor.execute("""SELECT * FROM account WHERE email = %s """, [email] ) #to database if the email exists
+     my_cursor.execute("""SELECT * FROM user_register WHERE email = %s """, [email] ) #to database if the email exists
      acc = my_cursor.fetchone()
-     if acc and sha256.verify(password, acc[3]):
+     if acc and sha256.verify(password, acc[4]):
        
          access_token = create_access_token(identity=acc)
          return jsonify(access_token=access_token)

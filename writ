@@ -20,3 +20,20 @@
 #                 forms.email.data = current_user.email
                
 #    return render_template('dashboard.html', title='dashboard', forms=forms)
+
+
+
+
+
+# import math, random
+
+# # function to generate OTP
+# def generateOTP() :
+# 	digits = "0123456789"
+# 	OTP = ""
+
+
+# 	for i in range(4) :
+# 		OTP += digits[math.floor(random.random() * 10)]
+
+# 	return OTP

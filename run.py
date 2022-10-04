@@ -1,6 +1,8 @@
 from  models import *
 from passlib.hash import pbkdf2_sha256 as sha256
-from extension.forget_maill import forget_passwordmail, generateOTP
+from extension.forget_maill import forget
+from werkzeug.utils import secure_filename
+import jwt as JWTT
 
 # home route
 @app.route('/')
@@ -27,7 +29,7 @@ def register():
             hash_password = sha256.hash(forms.password.data)
             my_cursor.execute('INSERT INTO user_register(firstname, lastname, email, password) VALUES (%s, %s, %s,%s)', (forms.firstname.data, forms.lastname.data, forms.email.data, hash_password ))
             mydb.commit()   
-            #mail= send_mail(forms.email.data)
+            mail= send_mail(forms.email.data)
                    
             flash("Welcome,account created you can login and a message is sent to your email address",'success')
             return redirect(url_for('login') )
@@ -84,9 +86,41 @@ def logout():
     session.pop('user', None)
     return redirect(url_for('login'))
 
-
-
 from adminn import *
+
+@app.route('/download_home')
+def download_home():    
+       return render_template('download.html', title='download')
+
+#download route
+@app.route('/download')
+def download():
+       p = "hey.jpg"
+       
+       return send_file(p,as_attachment=True)
+       #return send_file('innocent.docx',as_attachment=True)
+
+def check_file_extension(filename):
+   return filename.split('.')[-1] in allowed_extensions
+
+
+#uploading the file
+@app.route('/upload', methods=['GET', 'POST'])       
+def upload():
+   return render_template('upload.html', title='upload')
+
+
+@app.route('/upload_file', methods=['GET', 'POST'])
+def upload_file():
+  if request.method == 'POST':
+    file = request.files['file']
+    if check_file_extension(file.filename):
+      file.save(os.path.join(os.path.abspath(os.path.dirname(__file__)),app.config['UPLOAD_FOLDER'],secure_filename(file.filename)))    
+      return 'file upload sucessfully'
+    else:
+      return "The file extension is not allowed"
+   
+
 
 #passsword reset route
 @app.route('/reset_password', methods=['GET','POST'])
@@ -102,54 +136,37 @@ def reset_request():
       if user is None:
        flash('There is no account with that email, you must register first', 'danger')
       else:
-         send= forget_passwordmail(forms.email.data)         
-         flash('An opt  has been sent to your email, enter the opt ', 'info')
-         return redirect(url_for('verify_otp'))
+         send= forget(forms.email.data)         
+         flash('A link is sent to your email use it to reset password  and then login', 'info')
+         return redirect(url_for('home'))
     return render_template('reset_request.html', title='Reset Password', forms=forms)
 
 
-@app.route('/verify_otp', methods=['GET','POST'])
-def verify_otp():
-   forms= OtpForm()
-   if forms.validate_on_submit():
-      
-      user_otp = forms.otp.data
-      my_cursor = mydb.cursor(MySQLdb.cursors.DictCursor)
-      my_cursor.execute("""SELECT * FROM user_register WHERE otp = %s """, [user_otp] )
-      opt = my_cursor.fetchone()
-      if opt == user_otp:
-          return redirect(url_for('reset_otp'))
-      else:
-         flash("Please check your otp and enter the correct otp")
-   return render_template('otp.html', tittle='Otp verfication', forms=forms)
 
 
-#for token route
-@app.route('/reset_password/<token>', methods=['GET','POST'])
-def reset_otp(otp):
+#to verify the token and also reset the password
+@app.route('/passwordreset/<token>', methods=['GET','POST'])
+def passwordreset(token):
     
-   #  my_cursor = mydb.cursor(MySQLdb.cursors.DictCursor)
-   #  user = my_cursor.verify_reset_token(token)
-   #  if user is None:
-   #      flash('That is an invalid or expire token', 'warning')
-   #      return redirect(url_for('reset_request'))
     forms=ResetPasswordForm()
-    if forms.validate_on_submit():
-      password =forms.password.data
-      c_password = forms.c_password.data
-      if password == c_password:
-            hash_password = sha256.hash(forms.password.data)
-
-            my_cursor.execute(f'UPDATE SET user_register(password) VALUES (%s) {hash_password} WHERE otp = {otp}')
-            #my_cursor.execute(f'UPDATE account  SET password = {hash_password}  WHERE email = {email}' )
-
-            mydb.commit()  
-            flash('your password has been updated! You can now login with the new password', 'success')
-            return redirect(url_for('login'))
-      #  hashed_password = bcrypt.generate_password_hash(forms.password.data).decode('utf-8')
-      #  user.password = hashed_password
-      #  db.session.commit()
-      
+    verify=  JWTT.decode(token, os.getenv('SECRET_KEY'), algorithms=['HS256'])
+    
+    print(verify)
+    if verify is None:
+        return('token expired or tampared go generate a new token to reset your password')
+    else:
+        email = verify['sub']    
+        if forms.validate_on_submit():
+            password =forms.password.data
+            c_password = forms.c_password.data
+            if password == c_password:
+                  hash_password = sha256.hash(forms.password.data)
+                  my_cursor.execute(f"""UPDATE user_register SET password=%s WHERE email = %s""", [hash_password, email])
+               
+                  mydb.commit()  
+                  flash('your password has been updated! You can now login with the new password', 'success')
+                  return redirect(url_for('login'))
+     
     return render_template('reset_token.html', title='Reset Password', forms=forms)
 
 

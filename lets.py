@@ -1,5 +1,5 @@
-from flask import Flask, render_template, flash, redirect, url_for, session, request, g
-from form import RegisterForm, Loginform, UpdateAccountForm, Adminform, RequestResetForm, ResetPasswordForm, OtpForm
+from flask import Flask, render_template, flash, redirect, url_for, session, request, g, send_file
+from form import RegisterForm, Loginform, UpdateAccountForm, Adminform, RequestResetForm, ResetPasswordForm
 from flask_sqlalchemy import SQLAlchemy
 #from flask_bcrypt import Bcrypt
 from extension.maill import send_mail
@@ -13,9 +13,12 @@ import mysql.connector
 
 app = Flask(__name__)
     
-app.config['SECRET_KEY'] = "18cb87981a83029038bfc0a3ee5556c0"
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 #app.config['SQLALCHEMY_DATABASE_URI']= 'sqlite:///registration.db'
 app.config['SQLALCHEMY_DATABASE_URI']= 'mysql+pymysql://root:''@localhost/our_flask'
+app.config['UPLOAD_FOLDER'] = 'upload_folder/'
+app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024    #size of the allowed file
+allowed_extensions = ['jpg', 'png', 'jpeg']     #files extensions of the file allowed
 #db = SQLAlchemy(app)
 #bcrypt = Bcrypt(app)
 

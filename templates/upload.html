@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block content %}
+  
+   <h1> upload your picture</h1>
+   <form method="POST" action="http://localhost:5000/upload_file" enctype="multipart/form-data">
+    <input type="file" name="file" required><br>
+    <input type="submit" >
+   </form>
+
+   {%  endblock content%}

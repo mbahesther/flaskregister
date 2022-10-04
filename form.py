@@ -45,11 +45,6 @@ class ResetPasswordForm(FlaskForm):
     submit = SubmitField('Reset Password')
 
 
-class OtpForm(FlaskForm):
-    otp = IntegerField('Enter OTP', validators=[DataRequired() ])
-    submit = SubmitField('Submit OTP')
-
-
 class Adminform(FlaskForm):
         email = StringField('Email', validators=[DataRequired(), Email()])
         password =PasswordField('Password', validators=[DataRequired()])
